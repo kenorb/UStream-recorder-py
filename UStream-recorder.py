@@ -30,11 +30,17 @@ def getVideoData(url):
     amfContent = None
     if (channelId):
         amfUrl = "http://cdngw.ustream.tv/Viewer/getStream/1/%s.amf" % channelId
+        print "AMF URL: %s" % amfUrl
         response = urllib2.urlopen(amfUrl)
         amfContent = response.read()
-
         streams = []
-        rtmpUrl, streamName = re.search("\x00\x06cdnUrl\x02\x00.(rtmp:[^\x00]+)\x00\x0astreamName\x02\x00.([^\x00]+)", amfContent).groups()
+
+        try:
+          rtmpUrl, streamName = re.search("\x00\x06cdnUrl\x02\x00.(rtmp:[^\x00]+)\x00\x0astreamName\x02\x00.([^\x00]+)", amfContent).groups()
+        except AttributeError:
+          print "Error! Can't find rtmp stream in AMF object."
+          exit(1)
+
         streams.append({"url":rtmpUrl, "name":streamName})
 
         altPtn = re.compile("\x00\x0dcdnStreamName\x02\x00.([^\x00]+)\x00\x0ccdnStreamUrl\x02\x00.(rtmp:[^\x00]+)")
